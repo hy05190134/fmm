@@ -3,8 +3,17 @@
 Run `ubodt2binary` with
 
     make
-    ubodt2binary ubodt.txt ubodt.binary
+    # Convert txt to binary
+    ubodt2binary ubodt.txt ubodt.bin
+    # Convert binary to txt
+    binary2ubodt ubodt.binary temp.txt
+    # Check result
+    md5sum *.txt
 
+The output is
+
+    12910e34803e0b3791776e2dd574e572  temp.txt
+    12910e34803e0b3791776e2dd574e572  ubodt.txt
 
 ### Compression test
 
