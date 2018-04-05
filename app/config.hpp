@@ -44,6 +44,7 @@ public:
         multiplier=tree.get("fmm_config.input.ubodt.multiplier",37); // multiplier=30000
         nhash=tree.get("fmm_config.input.ubodt.nhash",127); // 5178049
         delta=tree.get("fmm_config.input.ubodt.delta",5000);
+        binary_flag=tree.get("fmm_config.input.ubodt.binary",1);
 
         // Network
         network_file = tree.get<std::string>("fmm_config.input.network.file");
@@ -79,6 +80,7 @@ public:
         std::cout<<std::left<<std::setw(4)<<""<<std::setw(20)<<"multiplier: "<< multiplier<<'\n';
         std::cout<<std::left<<std::setw(4)<<""<<std::setw(20)<<"nhash: "<< nhash<<'\n';
         std::cout<<std::left<<std::setw(4)<<""<<std::setw(20)<<"delta: "<< delta<<'\n';
+        std::cout<<std::left<<std::setw(4)<<""<<std::setw(20)<<"ubodt format(1 binary, 0 csv): "<< binary_flag <<'\n';
         std::cout<<std::left<<std::setw(4)<<""<<std::setw(20)<<"gps_file: "<< gps_file<<'\n';
         std::cout<<std::left<<std::setw(4)<<""<<std::setw(20)<<"gps_id: "<< gps_id<<'\n';
         std::cout<<std::left<<std::setw(4)<<""<<std::setw(20)<<"k: "<< k<<'\n';
@@ -136,6 +138,10 @@ public:
         }
         return false;
     };
+    // Check extension of the file, 0 for CSV and 1 for Binary
+    static int check_extension(std::string &filename){
+        return 2;
+    };
 
     /* Input files */
     // Network file
@@ -149,6 +155,7 @@ public:
     int multiplier;
     int nhash;
     double delta;
+    int binary_flag;
 
     // GPS file
     std::string gps_file;
@@ -207,6 +214,7 @@ public:
         // nid_index= temp>0; 
         // Output
         result_file=tree.get<std::string>("ubodt_config.output.file");
+        binary_flag = tree.get("ubodt_config.output.binary",1);
     };
     void print()
     {
@@ -218,6 +226,7 @@ public:
         std::cout<<std::left<<std::setw(4)<<""<<std::setw(20)<<"Network target: "<< network_target<<'\n';
         std::cout<<std::left<<std::setw(4)<<""<<std::setw(20)<<"delta: "<< delta<<'\n';
         std::cout<<std::left<<std::setw(4)<<""<<std::setw(20)<<"Output file:"<< result_file<<'\n';
+        std::cout<<std::left<<std::setw(4)<<""<<std::setw(20)<<"Output format(1 binary, 0 csv): "<< binary_flag <<'\n';
         std::cout<<"------------------------------------------"<<'\n';
     };
     bool validate()
@@ -253,6 +262,7 @@ public:
     std::string network_id;
     std::string network_source;
     std::string network_target;
+    int binary_flag;
     double delta;
     std::string result_file;
 }; // UBODT_Config
