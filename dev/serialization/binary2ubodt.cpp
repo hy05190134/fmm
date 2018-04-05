@@ -16,9 +16,9 @@ struct Record
     int source;
     int target;
     int next_n; // next_n in the paper
-    int next_e;
     int prev_n;
-    float cost;
+    int next_e;
+    double cost;
 };
 namespace boost{
     namespace serialization{
@@ -28,8 +28,8 @@ namespace boost{
             ar & r.source;
             ar & r.target;
             ar & r.next_n;
-            ar & r.next_e;
             ar & r.prev_n;
+            ar & r.next_e;
             ar & r.cost;
         };
     }
