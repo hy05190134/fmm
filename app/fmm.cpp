@@ -180,7 +180,7 @@ int main (int argc, char **argv)
                 delete c_path_ptr;
             }
         } else {
-            std::cout<<"ERROR: Unrecognized output mode"<<'\n';
+            return 0;
         };
         std::cout<<"\n============================="<<'\n';
         std::cout<<"MM process finished"<<'\n';

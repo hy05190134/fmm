@@ -71,11 +71,11 @@ public:
             insert(r);
         };
         fclose(stream);
-        printf("    Number of rows read %d.\n",NUM_ROWS);
+        std::cout<<"    Number of rows read " << NUM_ROWS << '\n';
         double lf = NUM_ROWS/(double)NHASH;
-        printf("    Estimated load factor #elements/#tablebuckets %lf.\n",lf);
-        if (lf>10) printf("    *** Warning, load factor is too large.\n");
-        printf("Finish reading UBODT.\n");
+        std::cout<<"    Estimated load factor #elements/#tablebuckets "<<lf<<"\n";
+        if (lf>10) std::cout<<"    *** Warning, load factor is too large.\n";
+        std::cout<<"Finish reading UBODT.\n";
     };
     /**
      * Read ubodt from a binary file
@@ -111,7 +111,7 @@ public:
             insert(r);
         }
         ifs.close();
-        std::cout<<"    Number of rows read" << NUM_ROWS << '\n';
+        std::cout<<"    Number of rows read " << NUM_ROWS << '\n';
         double lf = NUM_ROWS/(double)NHASH;
         std::cout<<"    Estimated load factor #elements/#tablebuckets "<<lf<<"\n";
         if (lf>10) std::cout<<"    *** Warning, load factor is too large.\n";
