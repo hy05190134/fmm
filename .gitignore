@@ -52,3 +52,7 @@ test/log/
 
 *.bin
 *.binary
+
+# Sqlite files
+
+*.sqlite
