@@ -74,7 +74,7 @@ int main (int argc, char **argv)
         if (result_config.write_mgeom) {
             LineString *m_geom = network.complete_path_to_geometry(o_path_ptr,&(t_path_ptr->cpath));
             ResultWriter::write_geometry(ss, m_geom);
-            cout << ss.str() << endl;
+            cerr << ss.str() << endl;
             delete m_geom;
         }
 
