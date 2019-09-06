@@ -31,11 +31,11 @@ int main (int argc, char **argv)
     if (argc<8)
     {
         std::cout<<"augument number error"<<endl;
-        std::cout<<"Run `fmm network_file_path ubodt_file_path gps_line_string k radius gps_error penalty_factor`"<<endl;
+        std::cout<<"Run `fmm network_file_path ubodt_file_path gps_file_path k radius gps_error penalty_factor`"<<endl;
     } else {
         std::string network_file = argv[1];
         std::string ubodt_file = argv[2];
-        std::string wkt = argv[3];
+        std::string gps_file = argv[3];
         double k = atof(argv[4]);
         double radius = atof(argv[5]);
         double gps_error = atof(argv[6]);
@@ -51,6 +51,7 @@ int main (int argc, char **argv)
         UBODT *ubodt = read_ubodt_csv(ubodt_file,multiplier);
         double delta = ubodt->get_delta();
 
+        TrajectoryReader tr_reader(gps_file,"id");
         // get all result
         ResultConfig result_config;
         result_config.write_mgeom = true;
@@ -58,14 +59,15 @@ int main (int argc, char **argv)
         // The header is moved to constructor of result writer
         // rw.write_header();
 
-        LineString line;
+        //LineString line;
         stringstream ss;
-        bg::read_wkt(wkt,*(line.get_geometry()));
+        //bg::read_wkt(wkt,*(line.get_geometry()));
 
-        int points_in_tr = line.getNumPoints();
+        Trajectory trajectory = tr_reader.read_next_trajectory();
+        int points_in_tr = trajectory.geom->getNumPoints();
         // Candidate search
-        Traj_Candidates traj_candidates = network.search_tr_cs_knn(&line,k,radius,gps_error);
-        TransitionGraph tg = TransitionGraph(&traj_candidates,&line,ubodt,delta);
+        Traj_Candidates traj_candidates = network.search_tr_cs_knn(trajectory,k,radius,gps_error);
+        TransitionGraph tg = TransitionGraph(&traj_candidates,trajectory.geom,ubodt,delta);
         // Optimal path inference
         O_Path *o_path_ptr = tg.viterbi(penalty_factor);
         // Complete path construction as an array of indices of edges vector

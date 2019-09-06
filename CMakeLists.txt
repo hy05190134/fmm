@@ -41,7 +41,7 @@ include_directories(include)
 
 file(GLOB APP_SOURCES app/*.cpp)
 foreach( source_file ${APP_SOURCES} )
-  add_definitions(-DUSE_BG_GEOMETRY=1)
+  #add_definitions(-DUSE_BG_GEOMETRY=1)
   # I used a simple string replace, to cut off .cpp.
   string( REPLACE ".cpp" "" filename ${source_file})
   get_filename_component(appname ${filename} NAME)

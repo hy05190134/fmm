@@ -322,6 +322,7 @@ UBODT *read_ubodt_csv(const std::string &filename, int multiplier=50000)
 /**
  * Read ubodt from a binary file, the caller takes the ownership.
  */
+/*
 UBODT *read_ubodt_binary(const std::string &filename, int multiplier=50000)
 {
     std::cout<<"Reading UBODT file (binary format) from: " << filename << '\n';
@@ -350,7 +351,7 @@ UBODT *read_ubodt_binary(const std::string &filename, int multiplier=50000)
         ia >> r->cost;
         r->next=NULL;
         if (NUM_ROWS%progress_step==0) printf("Read rows: %d\n",NUM_ROWS);
-        /* Insert into the hash table */
+        // Insert into the hash table
         table->insert(r);
     }
     ifs.close();
@@ -361,6 +362,6 @@ UBODT *read_ubodt_binary(const std::string &filename, int multiplier=50000)
     std::cout<<"Finish reading UBODT.\n";
     return table;
 };
-
+*/
 }
 #endif /* MM_UBODT_HPP */
