@@ -301,8 +301,8 @@ struct polygon_parser
             }
             else
             {
-                boost::geometry::range::resize(interior_rings(polygon), rings_parsed);
-                ring_type ringN = boost::geometry::range::back(interior_rings(polygon));
+                resize(interior_rings(polygon), rings_parsed);
+                ring_type ringN = back(interior_rings(polygon));
                 
                 if (!point_container_parser<ring_type>::parse(it, end, ringN, order))
                 {
