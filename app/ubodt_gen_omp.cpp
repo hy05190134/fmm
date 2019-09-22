@@ -5,7 +5,7 @@
  * @author: Can Yang
  * @version: 2018.03.09
  */
-#include "../src/network_graph.hpp"
+#include "../src/network_graph_omp.hpp"
 #include "../src/config.hpp"
 #include <iostream>
 #include <ctime>
@@ -20,7 +20,7 @@ int main(int argc, char* argv[])
     std::cout<<"------------  Application: ubodt_gen ------------"<<endl;
     if (argc<4) {
         std::cout<<"argument number error"<<endl;
-        std::cout<<"Run `ubodt_gen network_file_path result_file_path delta`"<<endl;
+        std::cout<<"Run `ubodt_gen_omp network_file_path result_file_path delta`"<<endl;
     } else {
         std::string network_file = argv[1];
         std::string result_file = argv[2];
@@ -32,7 +32,7 @@ int main(int argc, char* argv[])
             "id",
             "source",
             "target");
-        MM::NetworkGraph graph(&network);
+        MM::NetworkGraphOmp graph(&network);
         std::cout<<"Upperbound config (delta): "<<delta<<'\n';
         bool binary = false;
         graph.precompute_ubodt(result_file, delta, binary);
