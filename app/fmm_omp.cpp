@@ -14,8 +14,6 @@
 #include <fstream>
 #include <string>
 #include <ctime>
-#include <iterator>
-#include <regex>
 #include "../src/network.hpp"
 #include "../src/ubodt.hpp"
 #include "../src/transition_graph.hpp"
@@ -28,14 +26,23 @@ using namespace std;
 using namespace MM;
 using namespace MM::IO;
 
-std::vector<std::string> s_split(const std::string& in, const std::string& delim) {
-    std::regex re{ delim };
-    // 调用 std::vector::vector (InputIterator first, InputIterator last,const allocator_type& alloc = allocator_type())
-    // 构造函数,完成字符串分割
-    return std::vector<std::string> {
-        std::sregex_token_iterator(in.begin(), in.end(), re, -1),
-        std::sregex_token_iterator()
-    };
+vector<string> s_split(const string& str, const string& delim) {
+	vector<string> res;
+	if("" == str) return res;
+	char *strs = new char[str.length() + 1];
+	strcpy(strs, str.c_str());
+
+	char *d = new char[delim.length() + 1];
+	strcpy(d, delim.c_str());
+
+	char *p = strtok(strs, d);
+	while(p) {
+		string s = p; //分割得到的字符串转换为string类型
+		res.push_back(s); //存入结果数组
+		p = strtok(NULL, d);
+	}
+
+	return res;
 }
 
 int main (int argc, char **argv)
