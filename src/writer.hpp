@@ -142,10 +142,14 @@ public:
         if (config.write_mgeom) header+=";mgeom";
         m_fstream << header << '\n';
     };
-    static void write_geometry(std::stringstream &buf, LineString *line){
+    static void write_geometry(std::stringstream &buf, LineString *line, int tr_id = 0){
         if (line != nullptr) {
 #ifdef USE_BG_GEOMETRY
-            buf << std::setprecision(12) << line->exportToWkt();
+            if (tr_id > 0) {
+                buf << std::setprecision(12) << tr_id << ":" << line->exportToWkt();
+            } else {
+                buf << std::setprecision(12) << line->exportToWkt();
+            }
 #else
             char *wkt;
             line->exportToWkt(&wkt);

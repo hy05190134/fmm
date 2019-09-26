@@ -98,8 +98,8 @@ int main (int argc, char **argv)
             // C_Path *c_path_ptr = ubodt->construct_complete_path(o_path_ptr);
             if (result_config.write_mgeom) {
                 LineString *m_geom = network.complete_path_to_geometry(o_path_ptr,&(t_path_ptr->cpath));
-                ResultWriter::write_geometry(ss, m_geom);
-                cerr << i << ":" << ss.str() << endl;
+                ResultWriter::write_geometry(ss, m_geom, i+1);
+                cerr << ss.str() << endl;
                 delete m_geom;
             }
 
