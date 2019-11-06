@@ -14,6 +14,7 @@
 #include <fstream>
 #include <string>
 #include <ctime>
+#include "../src/network_graph_omp.hpp"
 #include "../src/network.hpp"
 #include "../src/ubodt.hpp"
 #include "../src/transition_graph.hpp"
@@ -50,10 +51,10 @@ int main (int argc, char **argv)
     if (argc<8)
     {
         std::cout<<"augument number error"<<endl;
-        std::cout<<"Run `fmm_omp network_file_path ubodt_file_path gps_string k radius gps_error penalty_factor`"<<endl;
+        std::cout<<"Run `fmm_omp network_file_path ubodt_delta gps_string k radius gps_error penalty_factor`"<<endl;
     } else {
         std::string network_file = argv[1];
-        std::string ubodt_file = argv[2];
+        double d_delta = atof(argv[2]);
         std::string wkt = argv[3];
         double k = atof(argv[4]);
         double radius = atof(argv[5]);
@@ -67,7 +68,9 @@ int main (int argc, char **argv)
         int multiplier = network.get_node_count();
         if (multiplier==0) multiplier = 50000;
 
-        UBODT *ubodt = read_ubodt_csv(ubodt_file,multiplier);
+        MM::NetworkGraphOmp graph(&network);
+        std::string ubodt_str = graph.precompute_ubodt_str(d_delta);
+        UBODT *ubodt = read_ubodt_from_str(ubodt_str, multiplier);
         double delta = ubodt->get_delta();
 
         // get all result

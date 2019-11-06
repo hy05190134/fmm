@@ -272,6 +272,54 @@ int find_prime_number(double value){
     }
     return prime_numbers[N-1];
 };
+
+/* read ubodt from string buffer */
+UBODT *read_ubodt_from_str(const std::string &ubodt_str, int multiplier=50000)
+{
+    std::cout<<"Reading UBODT file from str";
+
+    std::vector<std::string> lines;
+    boost::split(lines, ubodt_str, boost::is_any_of("\t"));
+
+    int rows = lines.size();
+    std::cout<<"Lys Estimated rows is : " << rows << '\n';
+    int progress_step = rows/10;
+    if (progress_step < 1) progress_step = 1;
+    int buckets = find_prime_number(rows/LOAD_FACTOR);
+    UBODT *table = new UBODT(buckets, multiplier);
+    int NUM_ROWS = 0;
+    char line[BUFFER_LINE];
+
+    // skip header line
+    for (int i = 1; i < lines.size(); i++)
+    {
+        std::string line = lines[i];
+        ++NUM_ROWS;
+        Record *r =(Record *) malloc(sizeof(Record));
+        /* Parse line into a Record */
+        sscanf(
+            line.c_str(),"%d;%d;%d;%d;%d;%lf",
+               &r->source,
+               &r->target,
+               &r->first_n,
+               &r->prev_n,
+               &r->next_e,
+               &r->cost
+        );
+        r->next=NULL;
+        if (NUM_ROWS%progress_step==0) printf("Read rows: %d\n",NUM_ROWS);
+        /* Insert into the hash table */
+        table->insert(r);
+    };
+
+    std::cout<<"    Number of rows read " << NUM_ROWS << '\n';
+    double lf = NUM_ROWS/(double)buckets;
+    std::cout<<"    Estimated load factor #elements/#tablebuckets "<<lf<<"\n";
+    if (lf>10) std::cout<<"    *** Warning, load factor is too large.\n";
+    std::cout<<"Finish reading UBODT.\n";
+    return table;
+};
+
 /**
  * Read ubodt from a csv file, the caller takes the ownership.
  * The ubodt is stored on heap memory.

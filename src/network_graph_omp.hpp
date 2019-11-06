@@ -116,6 +116,93 @@ public:
     };
 
     /**
+     * Precompute an UBODT with delta and return str
+     * @param delta    [description]
+     */
+    std::string precompute_ubodt_str(double delta) {
+        int step_size = num_vertices / 10;
+        if (step_size < 10) step_size = 10;
+        //std::ofstream m_fstream(filename);
+        std::stringstream m_fstream;
+
+        m_fstream << "source;target;next_n;prev_n;next_e;distance\t";
+        int progress = 0;
+        #pragma omp parallel
+        {
+            double thread_start_time = omp_get_wtime();
+            // The copy is not complete here
+            // boost::copy_graph(grid, graph, boost::vertex_copy(detail::grid_to_graph_vertex_copier(grid, graph))
+            // .edge_copy(detail::grid_to_graph_edge_copier()));
+            // Graph_T g;
+            // boost::copy_graph(mg, g);
+            std::vector<vertex_descriptor> predecessors_map(num_vertices);
+            std::vector<double> distances_map(num_vertices);
+            for (int i = 0; i < num_vertices; ++i) {
+                distances_map[i] = std::numeric_limits<double>::max();
+                predecessors_map[i] = i;
+            }
+            std::vector<vertex_descriptor> examined_vertices; // Nodes whose distance in the dist_map is updated.
+            int thread_process_count=0;
+            // If buf placed here, then the result almost doubles
+            // Position 1
+            // std::stringstream node_output_buf;
+            #pragma omp for
+            for (int source = 0; source < num_vertices; ++source) {
+                std::vector<vertex_descriptor> nodesInDistance;
+                examined_vertices.push_back(source);
+                double inf = std::numeric_limits<double>::max();
+                distances_map[source] = 0;
+                // make_iterator_property_map maps the vertex indices vector to predecessors.
+                boost::dijkstra_shortest_paths_upperbound(g,
+                        source,
+                        make_iterator_property_map(predecessors_map.begin(), get(boost::vertex_index, g), predecessors_map[0]),
+                        make_iterator_property_map(distances_map.begin(), get(boost::vertex_index, g), distances_map[0]),
+                        get(&Edge_Property::length, g),
+                        get(boost::vertex_index, g),
+                        std::less<double>(), //DistanceCompare distance_compare,
+                        boost::closed_plus<double>(inf),
+                        inf,
+                        0, delta, nodesInDistance,examined_vertices
+                );
+                std::vector<vertex_descriptor> successors = get_successors(nodesInDistance, predecessors_map);
+                double cost;
+                int edge_id;
+                int k = 0;
+                vertex_descriptor node;
+                std::stringstream node_output_buf;
+                // Position 2
+                while (k < nodesInDistance.size()) {
+                    node = nodesInDistance[k];
+                    if (source != node) {
+                        cost = distances_map[successors[k]] - distances_map[source];
+                        edge_id = get_edge_id(source, successors[k], cost);
+                        node_output_buf << vertex_id_vec[source]<< ";" << vertex_id_vec[node]
+                         << ";" << vertex_id_vec[successors[k]] << ";" << vertex_id_vec[predecessors_map[node]]
+                         << ";" << edge_id << ";" << distances_map[node] << "\t";
+                    }
+                    ++k;
+                }
+                ++progress;
+                if (progress % step_size == 0) {
+                    printf("Progress %d / %d \n",progress, num_vertices);
+                }
+                // Clean the result
+                int N = examined_vertices.size();
+                for (int i = 0; i < N; ++i) {
+                    vertex_descriptor v = examined_vertices[i];
+                    distances_map[v] = std::numeric_limits<double>::max();
+                    predecessors_map[v] = v;
+                }
+                examined_vertices.clear();
+                #pragma omp critical
+                m_fstream << node_output_buf.str();
+            } // end of omp for
+        } // end of omp parallel
+
+        return m_fstream.str();
+    };
+
+    /**
      * Precompute an UBODT with delta and save it to the file
      * @param delta    [description]
      */
