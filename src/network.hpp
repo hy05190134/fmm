@@ -66,6 +66,7 @@ public:
    *  @param target_name: the name of the target attribute
    *
    */
+  /*
   Network(const std::string &filename,
           const std::string &id_name="id",
           const std::string &source_name="source",
@@ -171,6 +172,69 @@ public:
     std::cout<<"Node count is "<< node_count << '\n';
     std::cout<<"\tTotal number of edges read "<< network_edges.size()<< '\n';
   };   // Network constructor
+  */
+  Network(const std::string &shpTxt,
+          const std::string &id_name="id",
+          const std::string &source_name="source",
+          const std::string &target_name="target") {
+
+    std::unordered_set<int> nodeSet;
+
+    std::vector<std::string> lines;
+    boost::split(lines, shpTxt, boost::is_any_of(" "));
+
+    network_edges = std::vector<Edge>(lines.size());
+
+    for (int i = 0; i < lines.size(); i++) {
+        std::string line = lines[i];
+        std::vector<std::string> infos;
+        boost::split(infos, line, boost::is_any_of(";"));
+
+        int id = atoi(infos[0].c_str()) - 1;
+        std::string id_attr = std::to_string(id);
+        int source_id = atoi(infos[1].c_str());
+        int target_id = atoi(infos[2].c_str());
+
+        Edge *e = &network_edges[id];
+        e->id = id;
+        e->id_attr = id_attr;
+        e->source = source_id;
+        e->target = target_id;
+
+        BGLineString *l = new BGLineString();
+        std::vector<std::string> pos;
+        boost::split(pos, infos[3], boost::is_any_of("|"));
+        for (int j = 0; j < pos.size(); j++) {
+            std::vector<std::string> p;
+            boost::split(p, pos[j], boost::is_any_of(","));
+            l->addPoint(atof(p[0].c_str()), atof(p[1].c_str()));
+        }
+        e->geom = l;
+        e->length = e->geom->get_Length();
+
+        if (e->source > max_node_id) {
+            max_node_id = e->source;
+        }
+        if (e->target > max_node_id) {
+            max_node_id = e->target;
+        }
+        if (nodeSet.find(e->source) == nodeSet.end()) {
+            nodeSet.insert(e->source);
+        }
+        if (nodeSet.find(e->target) == nodeSet.end()) {
+            nodeSet.insert(e->target);
+        }
+    }
+
+    srid= 4326;
+    node_count = nodeSet.size();
+
+    std::cout<<"Read network finish."<< '\n';
+    std::cout<<"\tThe maximum node ID is "<< max_node_id << '\n';
+    std::cout<<"Node count is "<< node_count << '\n';
+    std::cout<<"\tTotal number of edges read "<< network_edges.size()<< std::endl;
+  };   // Network constructor
+
   ~Network()
   {
     std::cout<< "Cleaning network" << '\n';
