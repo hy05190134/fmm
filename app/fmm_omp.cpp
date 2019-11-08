@@ -51,9 +51,9 @@ int main (int argc, char **argv)
     if (argc<8)
     {
         std::cout<<"augument number error"<<endl;
-        std::cout<<"Run `fmm_omp network_file_path ubodt_delta gps_string k radius gps_error penalty_factor`"<<endl;
+        std::cout<<"Run `fmm_omp shp_txt ubodt_delta gps_string k radius gps_error penalty_factor`"<<endl;
     } else {
-        std::string network_file = argv[1];
+        std::string shp_txt = argv[1];
         double d_delta = atof(argv[2]);
         std::string wkt = argv[3];
         double k = atof(argv[4]);
@@ -63,7 +63,7 @@ int main (int argc, char **argv)
 
         // clock_t begin_time = clock(); // program start time
         std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
-        Network network(network_file, "id", "source", "target");
+        Network network(shp_txt, "id", "source", "target");
         network.build_rtree_index();
         int multiplier = network.get_node_count();
         if (multiplier==0) multiplier = 50000;
