@@ -69,8 +69,7 @@ int main (int argc, char **argv)
         if (multiplier==0) multiplier = 50000;
 
         MM::NetworkGraphOmp graph(&network);
-        std::string ubodt_str = graph.precompute_ubodt_str(d_delta);
-        UBODT *ubodt = read_ubodt_from_str(ubodt_str, multiplier);
+        UBODT *ubodt = graph.precompute_ubodt_obj(d_delta, multiplier);
         double delta = ubodt->get_delta();
 
         // get all result

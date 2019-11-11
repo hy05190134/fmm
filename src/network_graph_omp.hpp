@@ -35,6 +35,7 @@
 #include "reader.hpp"
 #include "float.h"
 #include "network.hpp"
+#include "ubodt.hpp"
 #include <omp.h>
 #include <algorithm> // std::reverse
 #include <unordered_map>
@@ -113,6 +114,111 @@ public:
         } else {
             precompute_ubodt_csv(filename,delta);
         }
+    };
+
+    UBODT *precompute_ubodt_obj(double delta, int multiplier=5000) {
+        int step_size = num_vertices / 10;
+        if (step_size < 10) step_size = 10;
+
+        int progress = 0;
+        std::vector<std::vector<Record *> > records;
+        #pragma omp parallel
+        {
+            double thread_start_time = omp_get_wtime();
+            std::vector<vertex_descriptor> predecessors_map(num_vertices);
+            std::vector<double> distances_map(num_vertices);
+            for (int i = 0; i < num_vertices; ++i) {
+                distances_map[i] = std::numeric_limits<double>::max();
+                predecessors_map[i] = i;
+            }
+            std::vector<vertex_descriptor> examined_vertices; // Nodes whose distance in the dist_map is updated.
+            int thread_process_count=0;
+            // If buf placed here, then the result almost doubles
+            // Position 1
+            #pragma omp for
+            for (int source = 0; source < num_vertices; ++source) {
+                std::vector<vertex_descriptor> nodesInDistance;
+                examined_vertices.push_back(source);
+                double inf = std::numeric_limits<double>::max();
+                distances_map[source] = 0;
+                // make_iterator_property_map maps the vertex indices vector to predecessors.
+                boost::dijkstra_shortest_paths_upperbound(g,
+                        source,
+                        make_iterator_property_map(predecessors_map.begin(), get(boost::vertex_index, g), predecessors_map[0]),
+                        make_iterator_property_map(distances_map.begin(), get(boost::vertex_index, g), distances_map[0]),
+                        get(&Edge_Property::length, g),
+                        get(boost::vertex_index, g),
+                        std::less<double>(), //DistanceCompare distance_compare,
+                        boost::closed_plus<double>(inf),
+                        inf,
+                        0, delta, nodesInDistance,examined_vertices
+                );
+
+                std::vector<vertex_descriptor> successors = get_successors(nodesInDistance, predecessors_map);
+                double cost;
+                int edge_id;
+                int k = 0;
+                vertex_descriptor node;
+                std::vector<Record *> single_records;
+
+                // Position 2
+                while (k < nodesInDistance.size()) {
+                    node = nodesInDistance[k];
+                    if (source != node) {
+                        cost = distances_map[successors[k]] - distances_map[source];
+                        edge_id = get_edge_id(source, successors[k], cost);
+
+                        Record *r =(Record *) malloc(sizeof(Record));
+                        r->source = vertex_id_vec[source];
+                        r->target = vertex_id_vec[node];
+                        r->first_n = vertex_id_vec[successors[k]];
+                        r->prev_n = vertex_id_vec[predecessors_map[node]];
+                        r->next_e = edge_id;
+                        r->cost = distances_map[node];
+                        single_records.push_back(r);
+                    }
+                    ++k;
+                }
+                ++progress;
+                if (progress % step_size == 0) {
+                    printf("Progress %d / %d \n",progress, num_vertices);
+                }
+                // Clean the result
+                int N = examined_vertices.size();
+                for (int i = 0; i < N; ++i) {
+                    vertex_descriptor v = examined_vertices[i];
+                    distances_map[v] = std::numeric_limits<double>::max();
+                    predecessors_map[v] = v;
+                }
+                examined_vertices.clear();
+                #pragma omp critical
+                records.push_back(single_records);
+            } // end of omp for
+        } // end of omp parallel
+
+        int rows = 0;
+        for (int i = 0; i < records.size(); i++) {
+            rows += records[i].size();
+        }
+        int progress_step = rows / 10;
+        if (progress_step < 1) progress_step = 1;
+        int buckets = find_prime_number(rows/LOAD_FACTOR);
+        UBODT *table = new UBODT(buckets, multiplier);
+        int NUM_ROWS = 0;
+        for (int i = 0; i < records.size(); i++) {
+            for (int j = 0; j < records[i].size(); j++) {
+                ++NUM_ROWS;
+                table->insert(records[i][j]);
+                if (NUM_ROWS%progress_step==0) printf("Read rows: %d\n",NUM_ROWS);
+            }
+        }
+        std::cout<<"    Number of rows read " << NUM_ROWS << '\n';
+        double lf = NUM_ROWS/(double)buckets;
+        std::cout<<"    Estimated load factor #elements/#tablebuckets "<<lf<<"\n";
+        if (lf>10) std::cout<<"    *** Warning, load factor is too large.\n";
+        std::cout<<"Finish reading UBODT.\n";
+
+        return table;
     };
 
     /**
